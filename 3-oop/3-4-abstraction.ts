@@ -9,7 +9,14 @@
         makeCoffee(shots: number) : CoffeeCup;
     }
 
-    class CoffeeMachine implements CoffeeMaker {
+    interface CommercialCoffeeMaker {
+        makeCoffee(shots: number) : CoffeeCup;
+        fillCoffeeBeans(beans: number): void;
+        clean(): void;
+    }
+
+    // 두가지 인터페이스 규약을 따라간다./
+    class CoffeeMachine implements CoffeeMaker, CommercialCoffeeMaker {
         // ts에서 멤버변수 선언시 키워드를 사용하지 않는다. 
         
         // 외부에서 접근할 필요가 없다면 private를 사용 
@@ -24,7 +31,7 @@
         // static키워드를 붙여서 object를 만들수있는 함수를 제공한다는것은 
         // 생성자를 이용해서 생성하는것을 금지한다는 뜻이므로 constructor를 private으로 만들어서 
         // 항상 이 static 메소드를 이용할 수 있도록 권장하는것이 좋다.
-        static makeMachine(coffeeBeans: number) : CoffeeMaker {
+        static makeMachine(coffeeBeans: number) : CoffeeMachine {
             return new CoffeeMachine(coffeeBeans);
         }
 
@@ -34,6 +41,11 @@
                 throw new Error('value for beans should be greater than 0')
             }
             this.coffeeBeans += beans;
+        }
+
+        clean() {
+            console.log(`clean the machine`);
+            
         }
 
         grindBeans(shots: number){
@@ -68,19 +80,47 @@
     }
     
     // static을 붙이지 않으면 BEANS_GRAMM_PER_SHOT이 매번 공유되어 출력되기때문에 낭비가 될 수 있음. 
+    // const maker: CoffeeMachine = CoffeeMachine.makeMachine(32);
+    // maker.fillCoffeeBeans(32);
+    // maker.makeCoffee(2);
+    // // maker.coffeeBeans = -32; // invalid 외부에서 설정하지못해야함.
+
+    // // 추상화를 사용하지않으면 maker. 으로 확인했을때 extract,fillCoffeBeans 등 사용할수있는 함수가 많아보인다. 
+    // // encapsulateion, interface를 통해서 추상화를 할 수 있다. 
+    // // 보통 정보 은닉을 통해서 추상화가 가능하다. ( 필요한 함수 제외 하고 private 예약어 ) 
+
+    // // CoffeeMaker 안에는 makeCoffee 함수밖에 없기 때문에 인터페이스를 이용하면 얼마만큼의 행동을 허용할건지 결정할 수 있다.
+    // // const maker2: CoffeeMaker = CoffeeMachine.makeMachine(32);
+    // const maker2: CommercialCoffeeMaker = CoffeeMachine.makeMachine(32);
+    // maker2.fillCoffeeBeans(32);
+    // maker2.makeCoffee(2);
+    // maker2.clean();
+
+    class AmateurUser {
+        constructor(private machine: CoffeeMaker) {}
+        makeCoffee(){
+            const coffee = this.machine.makeCoffee(2);
+            console.log(coffee);
+            
+        }
+    }
+
+    class ProBarista {
+        constructor(private machine: CommercialCoffeeMaker) {}
+        makeCoffe() {
+            const coffee = this.machine.makeCoffee(2);
+            console.log(coffee);
+            this.machine.fillCoffeeBeans(45);
+            this.machine.clean();
+            
+        }
+    }
+
+    // 동일한 커피머신
     const maker: CoffeeMachine = CoffeeMachine.makeMachine(32);
-    maker.fillCoffeeBeans(32);
-    maker.makeCoffee(2);
-    // maker.coffeeBeans = -32; // invalid 외부에서 설정하지못해야함.
+    const amateur = new AmateurUser(maker);
+    const pro = new ProBarista(maker);
+    amateur.makeCoffee();
 
-    // 추상화를 사용하지않으면 maker. 으로 확인했을때 extract,fillCoffeBeans 등 사용할수있는 함수가 많아보인다. 
-    // encapsulateion, interface를 통해서 추상화를 할 수 있다. 
-    // 보통 정보 은닉을 통해서 추상화가 가능하다. ( 필요한 함수 제외 하고 private 예약어 ) 
-
-    // CoffeeMaker 안에는 makeCoffee 함수밖에 없기 때문에 인터페이스를 이용하면 얼마만큼의 행동을 허용할건지 결정할 수 있다.
-    // const maker2: CoffeeMaker = CoffeeMachine.makeMachine(32);
-    const maker2: CoffeeMachine = CoffeeMachine.makeMachine(32);
-    maker2.fillCoffeeBeans(32);
-    maker2.makeCoffee(2);
 }
 
